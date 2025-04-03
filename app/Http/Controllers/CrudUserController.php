@@ -7,6 +7,7 @@ use Session;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * CRUD User controller
@@ -19,7 +20,7 @@ class CrudUserController extends Controller
      */
     public function login()
     {
-        return view('login');
+        return view('crud_user.login');
     }
 
     /**
@@ -47,7 +48,7 @@ class CrudUserController extends Controller
      */
     public function createUser()
     {
-        return view('register');
+        return view('crud_user.create');
     }
 
     /**
@@ -74,17 +75,19 @@ class CrudUserController extends Controller
     /**
      * View user detail page
      */
-    public function readUser(Request $request) {
+    public function readUser(Request $request)
+    {
         $user_id = $request->get('id');
         $user = User::find($user_id);
 
-        return view('view', ['messi' => $user]);
+        return view('crud_user.read', ['messi' => $user]);
     }
 
     /**
      * Delete user by id
      */
-    public function deleteUser(Request $request) {
+    public function deleteUser(Request $request)
+    {
         $user_id = $request->get('id');
         $user = User::destroy($user_id);
 
@@ -99,7 +102,7 @@ class CrudUserController extends Controller
         $user_id = $request->get('id');
         $user = User::find($user_id);
 
-        return view('update', ['user' => $user]);
+        return view('crud_user.update', ['user' => $user]);
     }
 
     /**
@@ -107,19 +110,19 @@ class CrudUserController extends Controller
      */
     public function postUpdateUser(Request $request)
     {
-        $input = $request->all();   
+        $input = $request->all();
 
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users,id,'.$input['id'],
+            'email' => 'required|email|unique:users,id,' . $input['id'],
             'password' => 'required|min:6',
         ]);
 
-       $user = User::find($input['id']);
-       $user->name = $input['name'];
-       $user->email = $input['email'];
-       $user->password = $input['password'];
-       $user->save();
+        $user = User::find($input['id']);
+        $user->name = $input['name'];
+        $user->email = $input['email'];
+        $user->password = $input['password'];
+        $user->save();
 
         return redirect("list")->withSuccess('You have signed-in');
     }
@@ -129,9 +132,9 @@ class CrudUserController extends Controller
      */
     public function listUser()
     {
-        if(Auth::check()){
-            $users = User::all();
-            return view('list', ['users' => $users]);
+        if (Auth::check()) {
+            $users = User::paginate(10);
+            return view('crud_user.list', ['users' => $users]);
         }
 
         return redirect("login")->withSuccess('You are not allowed to access');
@@ -140,10 +143,16 @@ class CrudUserController extends Controller
     /**
      * Sign out
      */
-    public function signOut() {
+    public function signOut()
+    {
         Session::flush();
         Auth::logout();
 
         return Redirect('login');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_role');
     }
 }
