@@ -21,12 +21,18 @@
                         <th>{{ $user->id }}</th>
                         <th>{{ $user->name }}</th>
                         <th>{{ $user->email }}</th>
-                        <th>{{ $user->order }}</th>
+                     >
+                    
                         <th>
                             @foreach($user->roles as $role)
                             <a href="{{ route('user.role', ['id' => $role->id]) }}">
                                 {{ $role->name . '-' }}
                             </a>
+                            @endforeach
+                        </th>
+                        <th>
+                            @foreach ($user->orders as $order)
+                            <li>{{ $order->order_code }} - {{ $order->total }}</li>
                             @endforeach
                         </th>
                         <th>
@@ -41,7 +47,7 @@
 
             <!-- Hiển thị nút phân trang -->
             <div class="mt-3">
-            {!! $users->withQueryString()->links('pagination::bootstrap-5') !!}
+                {!! $users->withQueryString()->links('pagination::bootstrap-5') !!}
             </div>
 
         </div>
